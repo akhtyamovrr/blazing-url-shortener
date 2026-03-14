@@ -1,0 +1,13 @@
+[package]
+name = "blazing-url-shortener"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.4"
+dashmap = "6.1.0"
+deadpool-postgres = "0.14.1"
+nanoid = "0.4.0"
+serde = { version = "1.0.219", features = ["derive"] }
+tokio = { version = "1.47.1", features = ["full"] }
+tokio-postgres = "0.7.16"
