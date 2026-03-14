@@ -16,7 +16,7 @@ where
     }
 
     pub async fn execute(&self, id: &str) -> Result<String, String> {
-        self.repo.get_full_url_by_id(id)
+        self.repo.get_full_url_by_id(id.to_string()).await
     }
 }
 
@@ -34,7 +34,7 @@ mod tests {
         storage.insert("123".to_owned(), "https://yandex.ru".to_owned());
         let repo = InmemoryRepository::new(storage);
 
-        let result = repo.get_full_url_by_id("123").unwrap();
+        let result = repo.get_full_url_by_id("123".to_string()).await.unwrap();
         assert_eq!("https://yandex.ru", result);
     }
 
@@ -43,7 +43,7 @@ mod tests {
         let storage = Arc::new(DashMap::new());
         let repo = InmemoryRepository::new(storage);
 
-        let result = repo.get_full_url_by_id("1234");
-        assert!(result.is_err());
+        let result = repo.get_full_url_by_id("1234".to_string());
+        assert!(result.await.is_err());
     }
 }

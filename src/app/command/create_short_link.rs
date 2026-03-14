@@ -20,7 +20,7 @@ where
 
     pub async fn execute(&self, url: String) -> Result<String, String> {
         let id = self.id_provider.provide_id();
-        self.repo.save(id.clone(), url)?;
+        self.repo.save(id.clone(), url).await?;
         Ok(id)
     }
 }

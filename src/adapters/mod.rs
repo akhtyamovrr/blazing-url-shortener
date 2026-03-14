@@ -1,14 +1,18 @@
 use std::sync::Arc;
 
+use async_trait::async_trait;
+
 use dashmap::DashMap;
 
 
-pub trait CreateShortLinkRepository {
-    fn save(&self, id: String, full_url: String) -> Result<(), String>;
+#[async_trait]
+pub trait CreateShortLinkRepository: Send + Sync {
+    async fn save(&self, id: String, full_url: String) -> Result<(), String>;
 }
 
-pub trait QueryFullUrlRepository {
-    fn get_full_url_by_id(&self, id: &str) -> Result<String, String>;
+#[async_trait] 
+pub trait QueryFullUrlRepository: Send + Sync {
+    async fn get_full_url_by_id(&self, id: String) -> Result<String, String>;
 }
 
 #[derive(Clone)]
@@ -22,16 +26,18 @@ impl InmemoryRepository {
     }
 }
 
+#[async_trait] 
 impl CreateShortLinkRepository for InmemoryRepository {
-    fn save(&self, id: String, full_url: String) -> Result<(), String> {
+    async fn save(&self, id: String, full_url: String) -> Result<(), String> {
         self.storage.insert(id, full_url);
         Ok(())
     }
 }
 
+#[async_trait]
 impl QueryFullUrlRepository for InmemoryRepository {
-    fn get_full_url_by_id(&self, id: &str) -> Result<String, String> {
-        match self.storage.get(id) {
+    async fn get_full_url_by_id(&self, id: String) -> Result<String, String> {
+        match self.storage.get(&id) {
             Some(v) => Ok(v.clone()),
             None => Err("no such key".to_owned()),
         }
