@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    adapters::PgRepository,
-    id_provider::NanoIdProvider,
-    ports::rest::{Container, Server},
+    adapters::pg_repo::PgRepository, id_provider::NanoIdProvider, ports::rest::{Container, Server}
 };
 
 use deadpool_postgres::{Config, Runtime};
@@ -11,6 +9,7 @@ use tokio_postgres::NoTls;
 
 mod adapters;
 mod app;
+mod domain;
 mod error;
 mod id_provider;
 mod ports;

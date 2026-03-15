@@ -10,7 +10,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    adapters::{CreateShortLinkRepository, QueryFullUrlRepository},
+    domain::repository::{CreateShortLinkRepository, QueryFullUrlRepository},
     app::{
         command::create_short_link::CreateShortLinkCommand, query::query_full_url::QueryFullUrl,
     },

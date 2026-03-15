@@ -1,4 +1,4 @@
-use crate::{adapters::CreateShortLinkRepository, error::Error, id_provider::IDProvider};
+use crate::{domain::repository::CreateShortLinkRepository, error::Error, id_provider::IDProvider};
 
 pub struct CreateShortLinkCommand<I, R>
 where
@@ -32,7 +32,7 @@ mod tests {
 
     use dashmap::DashMap;
 
-    use crate::adapters::InmemoryRepository;
+    use crate::adapters::dash_map_repository::InmemoryRepository;
 
     use super::*;
 

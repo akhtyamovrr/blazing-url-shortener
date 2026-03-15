@@ -1,4 +1,4 @@
-use crate::{adapters::QueryFullUrlRepository, error::Error};
+use crate::{domain::repository::QueryFullUrlRepository, error::Error};
 
 pub struct QueryFullUrl<Q>
 where
@@ -26,7 +26,7 @@ mod tests {
 
     use dashmap::DashMap;
 
-    use crate::adapters::{InmemoryRepository, QueryFullUrlRepository};
+    use crate::{adapters::dash_map_repository::InmemoryRepository, domain::repository::QueryFullUrlRepository};
 
     #[tokio::test]
     async fn should_return_value() {
