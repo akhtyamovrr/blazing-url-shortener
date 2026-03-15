@@ -6,7 +6,7 @@ use dashmap::DashMap;
 
 #[cfg(test)]
 use crate::domain::repository::{CreateShortLinkRepository, QueryFullUrlRepository};
-use crate::{error::Error};
+use crate::error::Error;
 
 #[derive(Clone)]
 #[cfg(test)]

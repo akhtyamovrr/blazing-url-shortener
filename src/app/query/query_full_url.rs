@@ -26,7 +26,10 @@ mod tests {
 
     use dashmap::DashMap;
 
-    use crate::{adapters::dash_map_repository::InmemoryRepository, domain::repository::QueryFullUrlRepository};
+    use crate::{
+        adapters::dash_map_repository::InmemoryRepository,
+        domain::repository::QueryFullUrlRepository,
+    };
 
     #[tokio::test]
     async fn should_return_value() {

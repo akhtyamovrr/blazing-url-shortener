@@ -1,6 +1,9 @@
 use deadpool_postgres::Pool;
 
-use crate::{domain::repository::{CreateShortLinkRepository, QueryFullUrlRepository}, error::Error};
+use crate::{
+    domain::repository::{CreateShortLinkRepository, QueryFullUrlRepository},
+    error::Error,
+};
 
 use async_trait::async_trait;
 
