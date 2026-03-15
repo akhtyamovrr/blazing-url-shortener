@@ -1,4 +1,4 @@
-use crate::adapters::QueryFullUrlRepository;
+use crate::{adapters::QueryFullUrlRepository, error::Error};
 
 pub struct QueryFullUrl<Q>
 where
@@ -15,7 +15,7 @@ where
         Self { repo }
     }
 
-    pub async fn execute(&self, id: &str) -> Result<String, String> {
+    pub async fn execute(&self, id: &str) -> Result<String, Error> {
         self.repo.get_full_url_by_id(id.to_string()).await
     }
 }

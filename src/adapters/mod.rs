@@ -5,14 +5,16 @@ use async_trait::async_trait;
 use dashmap::DashMap;
 use deadpool_postgres::Pool;
 
+use crate::error::Error;
+
 #[async_trait]
 pub trait CreateShortLinkRepository: Send + Sync {
-    async fn save(&self, id: String, full_url: String) -> Result<(), String>;
+    async fn save(&self, id: String, full_url: String) -> Result<(), Error>;
 }
 
 #[async_trait]
 pub trait QueryFullUrlRepository: Send + Sync {
-    async fn get_full_url_by_id(&self, id: String) -> Result<String, String>;
+    async fn get_full_url_by_id(&self, id: String) -> Result<String, Error>;
 }
 
 #[derive(Clone)]
@@ -28,7 +30,7 @@ impl InmemoryRepository {
 
 #[async_trait]
 impl CreateShortLinkRepository for InmemoryRepository {
-    async fn save(&self, id: String, full_url: String) -> Result<(), String> {
+    async fn save(&self, id: String, full_url: String) -> Result<(), Error> {
         self.storage.insert(id, full_url);
         Ok(())
     }
@@ -36,10 +38,10 @@ impl CreateShortLinkRepository for InmemoryRepository {
 
 #[async_trait]
 impl QueryFullUrlRepository for InmemoryRepository {
-    async fn get_full_url_by_id(&self, id: String) -> Result<String, String> {
+    async fn get_full_url_by_id(&self, id: String) -> Result<String, Error> {
         match self.storage.get(&id) {
             Some(v) => Ok(v.clone()),
-            None => Err("no such key".to_owned()),
+            None => Err(Error::NotFound(id)),
         }
     }
 }
@@ -56,7 +58,7 @@ impl PgRepository {
 
 #[async_trait]
 impl CreateShortLinkRepository for PgRepository {
-    async fn save(&self, id: String, full_url: String) -> Result<(), String> {
+    async fn save(&self, id: String, full_url: String) -> Result<(), Error> {
         let client = self.pool.get().await.unwrap();
         client
             .execute(
@@ -64,21 +66,27 @@ impl CreateShortLinkRepository for PgRepository {
                 &[&id, &full_url],
             )
             .await
-            .unwrap();
+            .map_err(|_| Error::DbFailure)?;
         Ok(())
     }
 }
 
 #[async_trait]
 impl QueryFullUrlRepository for PgRepository {
-    async fn get_full_url_by_id(&self, id: String) -> Result<String, String> {
-        let client = self.pool.get().await.unwrap();
+    async fn get_full_url_by_id(&self, id: String) -> Result<String, Error> {
+        let client = self.pool.get().await.map_err(|_| Error::DbFailure)?;
         let stmt = client
             .prepare("SELECT full_url FROM links where id = $1")
             .await
-            .unwrap();
-        let row = client.query_one(&stmt, &[&id]).await.unwrap();
-        let value = row.get(0);
-        return Ok(value);
+            .map_err(|_| Error::DbFailure)?;
+        let row = client
+            .query_opt(&stmt, &[&id])
+            .await
+            .map_err(|_| Error::DbFailure)?;
+
+        return match row {
+            Some(r) => Ok(r.get(0)),
+            None => Err(Error::NotFound(id)),
+        };
     }
 }

@@ -3,6 +3,8 @@ use std::sync::Arc;
 use axum::{
     Json, Router,
     extract::{Path, State},
+    http,
+    response::IntoResponse,
     routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
@@ -12,6 +14,7 @@ use crate::{
     app::{
         command::create_short_link::CreateShortLinkCommand, query::query_full_url::QueryFullUrl,
     },
+    error::Error,
     id_provider::IDProvider,
 };
 
@@ -33,6 +36,28 @@ where
 {
     port: u16,
     container: Arc<Container<I, R, Q>>,
+}
+
+#[derive(Serialize)]
+struct ErrorResponse {
+    message: String,
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        let (status, message) = match self {
+            Error::NotFound(id) => (
+                http::StatusCode::NOT_FOUND,
+                format!("URL not found for {id}"),
+            ),
+            Error::UrlSyntax => (http::StatusCode::BAD_REQUEST, "Invalid URL".to_owned()),
+            Error::DbFailure => (
+                http::StatusCode::INTERNAL_SERVER_ERROR,
+                "Server error, please try again later".to_owned(),
+            ),
+        };
+        (status, Json(ErrorResponse { message })).into_response()
+    }
 }
 
 impl<I, R, Q> Container<I, R, Q>
@@ -94,7 +119,7 @@ struct ShortUrlResponse {
 async fn shorten_url<I, R, Q>(
     State(container): State<Arc<Container<I, R, Q>>>,
     Json(input): Json<CreateShortUrlRequest>,
-) -> Result<Json<ShortUrlResponse>, String>
+) -> Result<Json<ShortUrlResponse>, Error>
 where
     I: IDProvider + Send + Sync + 'static,
     R: CreateShortLinkRepository + Send + Sync + 'static,
@@ -121,7 +146,7 @@ impl From<String> for QueryFullUrlResponse {
 async fn get_full_url<I, R, Q>(
     Path(id): Path<String>,
     State(container): State<Arc<Container<I, R, Q>>>,
-) -> Result<Json<QueryFullUrlResponse>, String>
+) -> Result<Json<QueryFullUrlResponse>, Error>
 where
     I: IDProvider + Send + Sync + 'static,
     R: CreateShortLinkRepository + Send + Sync + 'static,

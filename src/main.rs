@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
 use crate::{
-    adapters::PgRepository, id_provider::NanoIdProvider, ports::rest::{Container, Server}
+    adapters::PgRepository,
+    id_provider::NanoIdProvider,
+    ports::rest::{Container, Server},
 };
 
 use deadpool_postgres::{Config, Runtime};
@@ -9,6 +11,7 @@ use tokio_postgres::NoTls;
 
 mod adapters;
 mod app;
+mod error;
 mod id_provider;
 mod ports;
 
@@ -26,7 +29,6 @@ async fn main() {
     cfg.password = Some("mysecretpassword".to_string());
 
     let pool = cfg.create_pool(Some(Runtime::Tokio1), NoTls).unwrap();
-
 
     let create_short_link_repo = PgRepository::new(pool.clone());
     let query_full_url_repo = PgRepository::new(pool.clone());

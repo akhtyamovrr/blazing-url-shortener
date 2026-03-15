@@ -1,4 +1,4 @@
-use crate::{adapters::CreateShortLinkRepository, id_provider::IDProvider};
+use crate::{adapters::CreateShortLinkRepository, error::Error, id_provider::IDProvider};
 
 pub struct CreateShortLinkCommand<I, R>
 where
@@ -18,9 +18,10 @@ where
         Self { id_provider, repo }
     }
 
-    pub async fn execute(&self, url: String) -> Result<String, String> {
+    pub async fn execute(&self, url: String) -> Result<String, Error> {
+        let parsed_url = url::Url::parse(&url).map_err(|_| Error::UrlSyntax)?;
         let id = self.id_provider.provide_id();
-        self.repo.save(id.clone(), url).await?;
+        self.repo.save(id.clone(), parsed_url.to_string()).await?;
         Ok(id)
     }
 }
@@ -70,6 +71,6 @@ mod tests {
             .unwrap();
         assert_eq!(storage.len(), 1);
         let full_url_value = storage.get(&id).unwrap();
-        assert_eq!(full_url_value.value(), "https://google.com");
+        assert_eq!(full_url_value.value(), "https://google.com/");
     }
 }
