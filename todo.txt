@@ -1,5 +1,5 @@
 kafka integration
 grpc integration
-transactions - how they work?
-easy way to run app with test data
+easy way to run app with preset test data
+enable tracing 
 
